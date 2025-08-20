@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cinnamon Quality Predictor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Cinnamon Quality Predictor</h1>
+
+        <form id="predictForm">
+            <div class="form-group">
+                <label>Sapmple_Id</label>
+                <input type="text" step="any" id="Sapmple_Id" required>
+            </div>
+            <div class="form-group">
+                <label>Moisture</label>
+                <input type="number" step="any" id="Moisture" required>
+            </div>
+            <div class="form-group">
+                <label>Ash</label>
+                <input type="number" step="any" id="Ash" required>
+            </div>
+            <div class="form-group">
+                <label>Volatile Oil</label>
+                <input type="number" step="any" id="Volatile_Oil" required>
+            </div>
+            <div class="form-group">
+                <label>Acid Insoluble Ash</label>
+                <input type="number" step="any" id="Acid_Insoluble_Ash" required>
+            </div>
+            <div class="form-group">
+                <label>Chromium</label>
+                <input type="number" step="any" id="Chromium" required>
+            </div>
+            <div class="form-group">
+                <label>Coumarin</label>
+                <input type="number" step="any" id="Coumarin" required>
+            </div>
+
+            <button type="submit" class="btn">Predict Quality</button>
+        </form>
+
+
+
+        <h2 id="result"></h2>
+    </div>
+
+    <script>
+        const form = document.getElementById('predictForm');
+        const resultText = document.getElementById('result');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const sampleID = document.getElementById('Sample_ID').value;
+            const features = [
+                parseFloat(document.getElementById('Moisture').value),
+                parseFloat(document.getElementById('Ash').value),
+                parseFloat(document.getElementById('Volatile_Oil').value),
+                parseFloat(document.getElementById('Acid_Insoluble_Ash').value),
+                parseFloat(document.getElementById('Chromium').value),
+                parseFloat(document.getElementById('Coumarin').value)
+            ];
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ Sample_ID: sampleID, features })
+                });
+
+                const data = await response.json();
+                if(data.prediction){
+                    resultText.innerText = `Sample ${data.Sample_ID} → Predicted Quality: ${data.prediction}`;
+                } else {
+                    resultText.innerText = `Error: ${data.error}`;
+                }
+
+            } catch (err) {
+                resultText.innerText = 'Error calling API';
+                console.error(err);
+            }
+        });
+    </script>
+</body>
+</html>

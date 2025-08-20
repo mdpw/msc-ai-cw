@@ -1,1 +1,1 @@
-# msc-ai-cw
+# cinnomon-cnn

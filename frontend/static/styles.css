@@ -1,0 +1,67 @@
+/* General body style with cinnamon background */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+    /* Lighter cinnamon background using overlay */
+    background: linear-gradient(rgba(255, 248, 240, 0.6), rgba(255, 248, 240, 0.6)),
+                url('images/cinnamon.jpg') no-repeat center center fixed;
+
+    background-size: cover;
+    margin: 0;
+    padding: 0;
+    color: #3e2f2f;
+}
+
+/* Container style */
+.container {
+    max-width: 500px;
+    margin: 50px auto;
+    background-color: rgba(255, 248, 240, 0.95); /* light translucent */
+    padding: 30px 40px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    text-align: center;
+}
+
+/* Title style */
+h1 {
+    color: #5a2c0d;
+    margin-bottom: 25px;
+}
+
+/* Form groups */
+.form-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+/* Labels */
+label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+}
+
+/* Apply same style for text and number inputs */
+input[type="text"],
+input[type="number"] {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #d9a066;
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 1rem;
+    color: #3e2f2f;
+}
+
+/* Optional: remove spinner arrows for number inputs (so it looks like text) */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield; /* Firefox */
+}
