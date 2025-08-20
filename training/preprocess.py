@@ -4,6 +4,14 @@ from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.model_selection import train_test_split
 import pandas as pd
 import os
+import joblib
+import os
+import json
+
+
+# Define paths
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # goes up from /training
+MODELS_DIR = os.path.join(BASE_DIR, "backend", "model")
 
 # -----------------------
 # Dataset path (root/dataset/processed)
@@ -19,6 +27,13 @@ df = df.drop(columns=['Sample_ID'])
 X = df.drop(columns=['Quality_Label'])
 y = df['Quality_Label']
 
+FEATURE_NAMES = X.columns.tolist()  # Save feature names
+
+# Save feature names
+feature_names_path = os.path.join(MODELS_DIR, "feature_names.json")
+with open(feature_names_path, "w") as f:
+    json.dump(FEATURE_NAMES, f)
+
 X_train, X_temp, y_train, y_temp = train_test_split(
     X, y, test_size=0.4, random_state=42, stratify=y
 )
@@ -31,10 +46,17 @@ X_train_scaled = scaler.fit_transform(X_train)
 X_val_scaled = scaler.transform(X_val)
 X_test_scaled = scaler.transform(X_test)
 
+# Save the scaler
+os.makedirs(MODELS_DIR, exist_ok=True)
+joblib.dump(scaler, os.path.join(MODELS_DIR, "scaler.joblib"))
+
 le = LabelEncoder()
 y_train_enc = le.fit_transform(y_train)
 y_val_enc = le.transform(y_val)
 y_test_enc = le.transform(y_test)
+
+# Save the label encoder
+joblib.dump(le, os.path.join(MODELS_DIR, "label_encoder.joblib"))
 
 X_train_tensor = torch.tensor(X_train_scaled, dtype=torch.float32)
 X_val_tensor = torch.tensor(X_val_scaled, dtype=torch.float32)
