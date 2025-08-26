@@ -1,13 +1,13 @@
+import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from sklearn.metrics import confusion_matrix, classification_report
-import pandas as pd
-from sklearn.decomposition import PCA
+import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-import numpy as np
-from sklearn.preprocessing import StandardScaler, LabelEncoder
+
+# Import preprocessed data and ANN
 from backend.model import ANN
 from training.preprocess import (
     X_train_tensor, y_train_tensor,
@@ -16,36 +16,43 @@ from training.preprocess import (
     train_loader, val_loader, test_loader,
     le, y_test_enc, X_test_scaled, scaler
 )
-import os
 
 # Hyperparameters & Setup
 input_size = X_train_tensor.shape[1]
 hidden_size = 64
 output_size = len(le.classes_)
+dropout_rate = 0.2
+learning_rate = 0.001
+num_epochs = 50
+patience = 5
 
-model = ANN(input_size=input_size, hidden_size=hidden_size, output_size=output_size)
+print(f"Input Size: {input_size}, Output Size: {output_size}")
+
+# Model, loss, optimizer, and scheduler
+model = ANN(
+    input_size=input_size,
+    hidden_size=hidden_size,
+    output_size=output_size,
+    dropout_rate=dropout_rate
+)
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-4)
+optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-4)
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=3)
 
-# Training loop with Early Stopping and metric storage ---
-num_epochs = 10
-train_losses, val_losses = [], []
-train_accuracies, val_accuracies = [], []
-
-best_val_loss = float('inf')
-patience = 5
-counter = 0
-
-# Ensure backend/model exists
+# Directory setup for saving best model
 model_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../backend/model'))
 os.makedirs(model_dir, exist_ok=True)
-
-# Set the model path
 model_path = os.path.join(model_dir, "best_model.pth")
 
-# Training loop with early stopping
+# Training Loop
+train_losses, val_losses = [], []
+train_accuracies, val_accuracies = [], []
+best_val_loss = float('inf')
+early_stop_counter = 0
+
+print("Starting training...\n")
 for epoch in range(num_epochs):
+    # Training
     model.train()
     running_loss, correct, total = 0.0, 0, 0
     for inputs, labels in train_loader:
@@ -54,10 +61,11 @@ for epoch in range(num_epochs):
         loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
+
         running_loss += loss.item() * inputs.size(0)
         _, predicted = torch.max(outputs, 1)
-        total += labels.size(0)
         correct += (predicted == labels).sum().item()
+        total += labels.size(0)
 
     train_loss = running_loss / total
     train_acc = correct / total
@@ -66,41 +74,58 @@ for epoch in range(num_epochs):
 
     # Validation
     model.eval()
-    val_loss, val_correct, val_total = 0.0, 0, 0
+    val_running_loss, val_correct, val_total = 0.0, 0, 0
     with torch.no_grad():
         for inputs, labels in val_loader:
             outputs = model(inputs)
             loss = criterion(outputs, labels)
-            val_loss += loss.item() * inputs.size(0)
+            val_running_loss += loss.item() * inputs.size(0)
             _, predicted = torch.max(outputs, 1)
-            val_total += labels.size(0)
             val_correct += (predicted == labels).sum().item()
+            val_total += labels.size(0)
 
-    val_loss /= val_total
+    val_loss = val_running_loss / val_total
     val_acc = val_correct / val_total
     val_losses.append(val_loss)
     val_accuracies.append(val_acc)
 
-    # Scheduler step
     scheduler.step(val_loss)
 
     print(f"Epoch {epoch+1}/{num_epochs} | "
           f"Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.4f} | "
           f"Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}")
 
-    # Early stopping
+    # Early Stopping
     if val_loss < best_val_loss:
         best_val_loss = val_loss
         torch.save(model.state_dict(), model_path)
-        counter = 0
+        early_stop_counter = 0
     else:
-        counter += 1
-        if counter >= patience:
+        early_stop_counter += 1
+        if early_stop_counter >= patience:
             print(f"Early stopping at epoch {epoch+1}")
             break
 
-print(f"Training complete. Best model saved to: {model_path}")
+print(f"\nTraining complete. Best model saved to: {model_path}")
 
-# Export metrics for reference
-__all__ = ['train_losses', 'val_losses', 'train_accuracies', 'val_accuracies']
+# Plot Training History
+plt.figure(figsize=(12, 5))
 
+plt.subplot(1, 2, 1)
+plt.plot(train_losses, label='Train Loss')
+plt.plot(val_losses, label='Val Loss')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.title('Loss Curve')
+plt.legend()
+
+plt.subplot(1, 2, 2)
+plt.plot(train_accuracies, label='Train Accuracy')
+plt.plot(val_accuracies, label='Val Accuracy')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.title('Accuracy Curve')
+plt.legend()
+
+plt.tight_layout()
+plt.show()

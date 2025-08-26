@@ -20,8 +20,14 @@ def predict_quality(
     input_size = X_train_tensor.shape[1]
     hidden_size = 64
     output_size = len(le.classes_)
+    dropout_rate = 0.2
     
-    model = model_class(input_size=input_size, hidden_size=hidden_size, output_size=output_size)
+    model = ANN(
+    input_size=input_size,
+    hidden_size=hidden_size,
+    output_size=output_size,
+    dropout_rate=dropout_rate
+)
     model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
     model.eval()  # Set to evaluation mode
 
