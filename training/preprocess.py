@@ -10,18 +10,14 @@ import json
 
 
 # Define paths
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # goes up from /training
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 MODELS_DIR = os.path.join(BASE_DIR, "backend", "model")
 
-# -----------------------
-# Dataset path (root/dataset/processed)
-# -----------------------
+# Dataset path
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-file_path = os.path.join(project_root, 'dataset', 'processed', 'modified_cinnamon_quality_dataset.csv')
+file_path = os.path.join(project_root, 'dataset', 'processed', 'cinnamon_dataset.csv')
 
-# -----------------------
 # Load and preprocess dataset
-# -----------------------
 df = pd.read_csv(file_path)
 df = df.drop(columns=['Sample_ID'])
 X = df.drop(columns=['Quality_Label'])
@@ -73,10 +69,7 @@ test_loader = DataLoader(TensorDataset(X_test_tensor, y_test_tensor), batch_size
 
 # Helper function for API inference
 def preprocess_input(features):
-    """
-    Preprocess a single API request.
-    features: list of numerical features
-    """
+    
     features_scaled = scaler.transform([features])
     input_tensor = torch.tensor(features_scaled, dtype=torch.float32)
     return input_tensor

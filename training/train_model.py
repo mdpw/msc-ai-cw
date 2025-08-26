@@ -8,10 +8,14 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 from sklearn.preprocessing import StandardScaler, LabelEncoder
-from backend.model import *
-from backend.src.utils import *
-from backend.preprocessing import *
-from backend.preprocessing import X_train_tensor, le, y_test_enc, X_test_tensor,X_test_scaled, scaler
+from backend.model import ANN
+from training.preprocess import (
+    X_train_tensor, y_train_tensor,
+    X_val_tensor, y_val_tensor,
+    X_test_tensor, y_test_tensor,
+    train_loader, val_loader, test_loader,
+    le, y_test_enc, X_test_scaled, scaler
+)
 import os
 
 # Hyperparameters & Setup
@@ -25,7 +29,7 @@ optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-4)
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=3)
 
 # Training loop with Early Stopping and metric storage ---
-num_epochs = 30
+num_epochs = 10
 train_losses, val_losses = [], []
 train_accuracies, val_accuracies = [], []
 
@@ -34,7 +38,7 @@ patience = 5
 counter = 0
 
 # Ensure backend/model exists
-model_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../backend/models'))
+model_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../backend/model'))
 os.makedirs(model_dir, exist_ok=True)
 
 # Set the model path
