@@ -66,7 +66,7 @@ y_train_tensor = torch.tensor(y_train_enc, dtype=torch.long)
 y_val_tensor = torch.tensor(y_val_enc, dtype=torch.long)
 y_test_tensor = torch.tensor(y_test_enc, dtype=torch.long)
 
-batch_size = 32
+batch_size = 64
 train_loader = DataLoader(TensorDataset(X_train_tensor, y_train_tensor), batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(TensorDataset(X_val_tensor, y_val_tensor), batch_size=batch_size, shuffle=False)
 test_loader = DataLoader(TensorDataset(X_test_tensor, y_test_tensor), batch_size=batch_size, shuffle=False)
