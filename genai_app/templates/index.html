@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cinnamon Quality Analyzer</title>
+</head>
+<body style="font-family: Arial; padding: 20px;">
+    <h2>Cinnamon Quality Analyzer</h2>
+    <form method="post">
+        <label for="prompt">Enter Grading Rules / Prompt:</label><br>
+        <textarea name="prompt" rows="6" cols="60">You are an expert quality grader. Return Low, Medium, or High only.</textarea><br><br>
+
+        <label for="features">Enter Cinnamon Features:</label><br>
+        <textarea name="features" rows="6" cols="60">Moisture: 7.5, Ash: 1.3, Volatile_Oil: 2.1, Acid_Insoluble_Ash: 0.16, Chromium: 0.43, Coumarin: 0.36, Fiber: 10.79, Density: 0.91, Oil_Content: 6.02, Resin: 2.35, Pesticide_Level: 0.013, PH_Value: 5.9</textarea><br><br>
+
+        <button type="submit">Analyze Quality</button>
+    </form>
+
+    {% if response %}
+    <h3>Analysis Result:</h3>
+    <p>{{ response }}</p>
+    {% endif %}
+</body>
+</html>

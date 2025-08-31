@@ -11,7 +11,7 @@ import seaborn as sns
 # Import preprocessed data and ANN
 # ---------------------------
 from backend.model import ANN
-from training.preprocess import (
+from main_app.training.preprocess import (
     X_train_tensor, y_train_tensor,
     X_val_tensor, y_val_tensor,
     X_test_tensor, y_test_tensor,
@@ -23,7 +23,8 @@ from training.preprocess import (
 # Hyperparameters & Setup
 # ---------------------------
 input_size = X_train_tensor.shape[1]
-hidden_size = 128
+hidden1_size = 128
+hidden2_size = 64
 output_size = len(le.classes_)
 dropout_rate = 0.2
 learning_rate = 0.001
@@ -35,7 +36,8 @@ factor = 0.5
 # Model, loss, optimizer, and scheduler
 model = ANN(
     input_size=input_size,
-    hidden_size=hidden_size,
+    hidden1_size=hidden1_size,
+    hidden2_size=hidden2_size,
     output_size=output_size,
     dropout_rate=dropout_rate
 )
@@ -44,7 +46,8 @@ optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate, weight_decay
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=factor, patience=patience)
 
 # Directory setup for saving best model
-model_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../backend/model'))
+#model_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../backend/model'))
+model_dir = os.path.join(os.path.dirname(__file__), "backend", "model")
 os.makedirs(model_dir, exist_ok=True)
 model_path = os.path.join(model_dir, "best_model.pth")
 

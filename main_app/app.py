@@ -2,9 +2,10 @@ from flask import Flask, request, jsonify, render_template
 import torch
 import os
 import sys
-from backend.explain_shap import predict_and_explain_shap
 import json
 import pandas as pd
+from backend.explain_shap import predict_and_explain_shap
+from training.preprocess import FEATURE_NAMES, preprocess_input, le, scaler
 
 # -------------------------
 # Add backend and training to sys.path
@@ -31,9 +32,14 @@ app = Flask(
 model_path = os.path.join('backend', 'model', 'best_model.pth')
 model, device = load_model(model_path)
 
-MODELS_DIR = os.path.join('backend', 'model')
-with open(os.path.join(MODELS_DIR, "feature_names.json")) as f:
-    FEATURE_NAMES = json.load(f)
+# -------------------------
+# Update FEATURE_NAMES for 12 features
+# -------------------------
+FEATURE_NAMES = [
+    "Moisture", "Ash", "Volatile_Oil", "Acid_Insoluble_Ash", 
+    "Chromium", "Coumarin", "Fiber", "Density", 
+    "Oil_Content", "Resin", "Pesticide_Level", "PH_Value"
+]
 
 # -------------------------
 # Routes
@@ -48,13 +54,16 @@ def predict():
         data = request.json
         sample_id = data.get('Sample_ID', 'Unknown')
         features = data['features']
-        input_tensor = preprocess_input(features).to(device)
+
+        # Ensure the features are in correct order for the model
+        features_df = pd.DataFrame([features], columns=FEATURE_NAMES)
+        input_tensor = torch.tensor(scaler.transform(features_df), dtype=torch.float32)
 
         with torch.no_grad():
             output = model(input_tensor)
             predicted_class = torch.argmax(output, dim=1).item()
             predicted_label = le.inverse_transform([predicted_class])[0]
-
+        
         return jsonify({"Sample_ID": sample_id, "prediction": predicted_label})
     except Exception as e:
         return jsonify({"error": str(e)})
@@ -64,7 +73,7 @@ def predict_shap():
     try:
         payload = request.get_json(force=True)
 
-        # Make sure all features are present
+        # Make sure all 12 features are present
         missing = [feat for feat in FEATURE_NAMES if feat not in payload]
         if missing:
             return jsonify({"error": f"Missing features: {missing}"}), 400
@@ -76,12 +85,10 @@ def predict_shap():
         # Get prediction + SHAP explanation
         result = predict_and_explain_shap(df, top_k=5)
 
-        # Return JSON including base64 plot
         return jsonify(result)
-
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
+
 @app.route('/shap')
 def shap_page():
     return render_template('shap_explanation.html')
@@ -89,5 +96,6 @@ def shap_page():
 # -------------------------
 # Run server
 # -------------------------
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    # Run on port 5001
+    app.run(debug=True, host="0.0.0.0", port=5001)

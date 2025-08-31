@@ -9,20 +9,25 @@ import os
 import json
 
 
-# Define paths
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # goes up from /training
-MODELS_DIR = os.path.join(BASE_DIR, "backend", "model")
+# main_app folder is current __file__ location
+# Current folder is main_app/training
+TRAINING_DIR = os.path.dirname(__file__)
+# main_app folder
+MAIN_APP_DIR = os.path.abspath(os.path.join(TRAINING_DIR, '..'))
+# Project root (one level above main_app)
+PROJECT_ROOT = os.path.abspath(os.path.join(MAIN_APP_DIR, '..'))
 
-# -----------------------
-# Dataset path (root/dataset/processed)
-# -----------------------
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-file_path = os.path.join(project_root, 'dataset', 'processed', 'cinnamon_quality_dataset.csv')
+# Correct dataset path
+DATASET_PATH = os.path.join(PROJECT_ROOT, 'dataset', 'processed', 'cinnamon_quality_dataset.csv')
+
+# Backend model folder
+MODELS_DIR = os.path.join(MAIN_APP_DIR, "backend", "model")
+os.makedirs(MODELS_DIR, exist_ok=True)
 
 # -----------------------
 # Load and preprocess dataset
 # -----------------------
-df = pd.read_csv(file_path)
+df = pd.read_csv(DATASET_PATH)
 df = df.drop(columns=['Sample_ID'])
 X = df.drop(columns=['Quality_Label'])
 y = df['Quality_Label']
