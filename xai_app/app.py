@@ -1,11 +1,16 @@
+import sys
+import os
+
+# Add project root to sys.path
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(BASE_DIR)
+
 from flask import Flask, request, jsonify, render_template
 import os
 import sys
 import pandas as pd
 import torch
 
-# Add main_app paths to sys.path
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(os.path.join(BASE_DIR, 'main_app'))
 sys.path.append(os.path.join(BASE_DIR, 'main_app', 'backend'))
 sys.path.append(os.path.join(BASE_DIR, 'main_app', 'training'))
@@ -17,8 +22,7 @@ from main_app.backend.model_loader import load_model
 # Initialize Flask app
 xai_app = Flask(
     __name__,
-    template_folder='frontend',
-    static_folder='static'
+    template_folder='frontend'
 )
 
 # Load model
@@ -28,7 +32,7 @@ model, device = load_model(model_path)
 # Routes
 @xai_app.route('/')
 def home():
-    return render_template('index.html')
+    return render_template('xai_app.html')
 
 @xai_app.route('/predict_shap', methods=['POST'])
 def predict_shap():
@@ -46,5 +50,5 @@ def predict_shap():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-#if __name__ == '__main__':
-#    xai_app.run(debug=True, host="0.0.0.0", port=8003)
+if __name__ == '__main__':
+    xai_app.run(debug=True, host="0.0.0.0", port=8003)

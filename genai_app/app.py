@@ -15,8 +15,8 @@ def index():
         prompt = request.form["prompt"]
         features = request.form["features"]
         response = analyze_cinnamon_quality(prompt, features)
-        return render_template("index.html", response=response)
-    return render_template("index.html", response=None)
+        return render_template("genai_app.html", response=response)
+    return render_template("genai_app.html", response=None)
 
 def analyze_cinnamon_quality(prompt_text, features_text):
     chat = client.chats.create(model="gemini-2.5-flash")
@@ -24,6 +24,6 @@ def analyze_cinnamon_quality(prompt_text, features_text):
     response = chat.send_message(full_prompt)
     return response.text
 
-#if __name__ == "__main__":
-#    # Run on port 5000
-#    app.run(debug=True, host="0.0.0.0", port=8002)
+if __name__ == "__main__":
+    # Run on port 5000
+    app.run(debug=True, host="0.0.0.0", port=8002)

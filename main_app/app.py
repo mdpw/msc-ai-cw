@@ -1,18 +1,17 @@
-from flask import Flask, request, jsonify, render_template
-import torch
 import os
 import sys
+
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+sys.path.append(BASE_DIR)
+sys.path.append(os.path.join(BASE_DIR, 'training'))
+sys.path.append(os.path.join(BASE_DIR, 'backend'))
+
+import torch
 import json
 import pandas as pd
-from xai_app.explain_shap import predict_and_explain_shap
-from training.preprocess import FEATURE_NAMES, preprocess_input, le, scaler
+from flask import Flask, request, jsonify, render_template
+from training.preprocess import preprocess_input, le, scaler
 from backend.model_loader import load_model
-
-# -------------------------
-# Add backend and training to sys.path
-# -------------------------
-sys.path.append(os.path.join(os.path.dirname(__file__), 'backend'))
-sys.path.append(os.path.join(os.path.dirname(__file__), 'training'))
 
 
 # -------------------------
@@ -27,13 +26,14 @@ app = Flask(
 # -------------------------
 # Load model
 # -------------------------
-model_path = os.path.join('backend', 'model', 'best_model.pth')
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+model_path = os.path.join(BASE_DIR, 'backend', 'model', 'best_model.pth')
 model, device = load_model(model_path)
 
 # -------------------------
 # Update FEATURE_NAMES for 12 features
 # -------------------------
-FEATURE_NAMES_PATH = os.path.join('backend', 'model', 'feature_names.json')
+FEATURE_NAMES_PATH = os.path.join(BASE_DIR, 'backend', 'model', 'feature_names.json')
 with open(FEATURE_NAMES_PATH, 'r') as f:
     FEATURE_NAMES = json.load(f)
 
@@ -67,6 +67,6 @@ def predict():
 # -------------------------
 # Run server
 # -------------------------
-#if __name__ == "__main__":
-#    # Run on port 8001
-#   app.run(debug=True, host="0.0.0.0", port=8001)
+if __name__ == "__main__":
+    # Run on port 8001
+   app.run(debug=True, host="0.0.0.0", port=8001)

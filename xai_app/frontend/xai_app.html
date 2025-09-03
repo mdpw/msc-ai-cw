@@ -32,12 +32,18 @@
     <script>
         // Example payload - you can get this dynamically from a form
         const payload = {
-            "Moisture": 12.19,
-            "Ash": 7.356,
-            "Volatile_Oil": 0.626,
-            "Acid_Insoluble_Ash": 0.581,
-            "Chromium": 0.002,
-            "Coumarin": 0.015
+            "Moisture": 7.5735,
+            "Ash": 1.3274,
+            "Volatile_Oil": 2.0912,
+            "Acid_Insoluble_Ash": 0.1618,
+            "Chromium": 0.4303,
+            "Coumarin": 0.3628,
+            "Fiber": 10.7924, 
+            "Density": 0.9128, 
+            "Oil_Content": 6.0225, 
+            "Resin": 2.3581, 
+            "Pesticide_Level": 0.0131, 
+            "PH_Value": 5.9010
         };
 
         fetch('/predict_shap', {
