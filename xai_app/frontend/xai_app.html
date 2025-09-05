@@ -1,79 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>SHAP Explanation</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        h2 { color: #333; }
-        #shap-container { margin-top: 20px; }
-        img { max-width: 600px; height: auto; border: 1px solid #ccc; padding: 5px; }
-        .feature-list { margin-top: 20px; }
-        .feature-list li { margin-bottom: 5px; }
-    </style>
+<meta charset="UTF-8">
+<title>SHAP Explanations</title>
+<style>
+body { font-family: Arial; margin:20px; }
+h2 { color:#333; }
+img { max-width:600px; border:1px solid #ccc; padding:5px; }
+input { width:80px; margin:2px; }
+button { margin:5px; }
+.radio-group { margin-bottom:10px; }
+</style>
 </head>
 <body>
-    <h2>Prediction & SHAP Explanation</h2>
 
+<h2>Local SHAP (Single Input)</h2>
+<div id="local-section">
+    <div id="feature-inputs"></div>
+    <button id="predict-btn">Predict & Explain</button>
     <div>
         <strong>Predicted Label:</strong> <span id="predicted-label">-</span>
     </div>
+    <img id="shap-local" src="" />
+    <ul id="top-features"></ul>
+</div>
 
-    <div id="shap-container">
-        <h3>SHAP Feature Contributions</h3>
-        <img id="shap-plot" src="" alt="SHAP plot will appear here" />
+<hr>
+
+<h2>Global SHAP</h2>
+<div id="global-section">
+    <div class="radio-group">
+        <strong>Select Class:</strong>
+        <label><input type="radio" name="class-select" value="" checked> Aggregate</label>
+        <label><input type="radio" name="class-select" value="High"> High</label>
+        <label><input type="radio" name="class-select" value="Medium"> Medium</label>
+        <label><input type="radio" name="class-select" value="Low"> Low</label>
     </div>
-
-    <div class="feature-list">
-        <h3>Top Contributing Features</h3>
-        <ul id="top-features"></ul>
+    <button id="global-btn">Load Global SHAP</button>
+    <div>
+        <h4>Summary Plot</h4><img id="shap-global-summary" src="" />
+        <h4>Dependence Plot</h4><img id="shap-global-dependence" src="" />
+        <h4>Beeswarm Plot</h4><img id="shap-global-beeswarm" src="" />
+        <h4>Force Plot (first sample)</h4><img id="shap-global-force" src="" />
     </div>
+</div>
 
-    <script>
-        // Example payload - you can get this dynamically from a form
-        const payload = {
-            "Moisture": 7.5735,
-            "Ash": 1.3274,
-            "Volatile_Oil": 2.0912,
-            "Acid_Insoluble_Ash": 0.1618,
-            "Chromium": 0.4303,
-            "Coumarin": 0.3628,
-            "Fiber": 10.7924, 
-            "Density": 0.9128, 
-            "Oil_Content": 6.0225, 
-            "Resin": 2.3581, 
-            "Pesticide_Level": 0.0131, 
-            "PH_Value": 5.9010
-        };
+<script>
+const FEATURES = ["Moisture","Ash","Volatile_Oil","Acid_Insoluble_Ash","Chromium","Coumarin","Fiber","Density","Oil_Content","Resin","Pesticide_Level","PH_Value"];
 
-        fetch('/predict_shap', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                alert(data.error);
-                return;
-            }
+// Generate input boxes for Local SHAP
+const inputsDiv = document.getElementById('feature-inputs');
+FEATURES.forEach(f=>{
+    const inp = document.createElement('input'); inp.type='number'; inp.id=f; inp.placeholder=f;
+    inputsDiv.appendChild(inp);
+});
 
-            // Set predicted label
-            document.getElementById('predicted-label').innerText = data.predicted_label;
+// ---------------- Local SHAP ----------------
+document.getElementById('predict-btn').addEventListener('click', ()=>{
+    const payload = {};
+    FEATURES.forEach(f=>{ payload[f] = parseFloat(document.getElementById(f).value || 0); });
+    fetch('/predict_shap',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+    }).then(r=>r.json()).then(data=>{
+        if(data.error){ alert(data.error); return; }
+        document.getElementById('predicted-label').innerText = data.predicted_label;
+        document.getElementById('shap-local').src = 'data:image/png;base64,'+data.shap_local_bar;
+        const ul = document.getElementById('top-features'); ul.innerHTML='';
+        data.top_contributors.forEach(item=>{
+            const li=document.createElement('li');
+            li.innerText = `${item.feature}: SHAP=${item.shap_value.toFixed(4)}`;
+            ul.appendChild(li);
+        });
+    });
+});
 
-            // Set SHAP plot
-            document.getElementById('shap-plot').src = 'data:image/png;base64,' + data.shap_plot_base64;
+// ---------------- Global SHAP ----------------
+document.getElementById('global-btn').addEventListener('click', ()=>{
+    // Get selected class
+    const radios = document.getElementsByName('class-select');
+    let selectedClass = '';
+    radios.forEach(r => { if(r.checked) selectedClass = r.value; });
 
-            // Populate top contributors
-            const topFeaturesUl = document.getElementById('top-features');
-            topFeaturesUl.innerHTML = '';
-            data.top_contributors.forEach(item => {
-                const li = document.createElement('li');
-                li.innerText = `${item.feature}: SHAP = ${item.shap_value.toFixed(4)}`;
-                topFeaturesUl.appendChild(li);
-            });
-        })
-        .catch(err => console.error(err));
-    </script>
+    fetch(`/global_shap?class_name=${selectedClass}`).then(r=>r.json()).then(data=>{
+        if(data.error){ alert(data.error); return; }
+        document.getElementById('shap-global-summary').src='data:image/png;base64,'+data.shap_global_summary;
+        document.getElementById('shap-global-dependence').src='data:image/png;base64,'+data.shap_global_dependence;
+        document.getElementById('shap-global-beeswarm').src='data:image/png;base64,'+data.shap_global_beeswarm;
+        document.getElementById('shap-global-force').src='data:image/png;base64,'+data.shap_global_force;
+    });
+});
+</script>
+
 </body>
 </html>
