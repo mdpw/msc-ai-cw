@@ -1,8 +1,10 @@
 import torch
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader, TensorDataset, WeightedRandomSampler
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.model_selection import train_test_split
+from sklearn.utils.class_weight import compute_class_weight
 import pandas as pd
+import numpy as np
 import os
 import joblib
 import json
@@ -10,7 +12,7 @@ import json
 # -----------------------------
 # Paths
 # -----------------------------
-TRAINING_DIR = os.path.dirname(__file__)  # main_app/training
+TRAINING_DIR = os.path.dirname(__file__)
 MAIN_APP_DIR = os.path.abspath(os.path.join(TRAINING_DIR, '..'))
 PROJECT_ROOT = os.path.abspath(os.path.join(MAIN_APP_DIR, '..'))
 
@@ -23,9 +25,28 @@ os.makedirs(MODELS_DIR, exist_ok=True)
 # -----------------------------
 df = pd.read_csv(DATASET_PATH)
 df = df.drop(columns=['Sample_ID'])
+
+# -----------------------------
+# Handle null values
+# -----------------------------
+# Fill numerical NaNs with median
+num_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+df[num_cols] = df[num_cols].fillna(df[num_cols].median())
+
+# Drop rows with missing target
+df = df.dropna(subset=['Quality_Label'])
+
+# -----------------------------
+# Remove noise/outliers using Z-score
+# -----------------------------
+z_scores = np.abs((df[num_cols] - df[num_cols].mean()) / df[num_cols].std())
+df = df[(z_scores < 3).all(axis=1)]
+
+# -----------------------------
+# Split features and target
+# -----------------------------
 X = df.drop(columns=['Quality_Label'])
 y = df['Quality_Label']
-
 FEATURE_NAMES = X.columns.tolist()
 
 # Save feature names
@@ -66,7 +87,7 @@ y_test_enc = le.transform(y_test)
 joblib.dump(le, os.path.join(MODELS_DIR, "label_encoder.joblib"))
 
 # -----------------------------
-# Save training dataset for SHAP (original values, not scaled)
+# Save training dataset for SHAP
 # -----------------------------
 train_orig_df = X_train.copy()
 train_orig_df['Quality_Label'] = y_train
@@ -85,10 +106,18 @@ y_val_tensor = torch.tensor(y_val_enc, dtype=torch.long)
 y_test_tensor = torch.tensor(y_test_enc, dtype=torch.long)
 
 # -----------------------------
+# Handle class imbalance with WeightedRandomSampler
+# -----------------------------
+classes = np.unique(y_train_enc)
+class_weights = compute_class_weight(class_weight="balanced", classes=classes, y=y_train_enc)
+sample_weights = np.array([class_weights[label] for label in y_train_enc])
+sampler = WeightedRandomSampler(weights=sample_weights, num_samples=len(sample_weights), replacement=True)
+
+# -----------------------------
 # DataLoaders
 # -----------------------------
 batch_size = 64
-train_loader = DataLoader(TensorDataset(X_train_tensor, y_train_tensor), batch_size=batch_size, shuffle=True)
+train_loader = DataLoader(TensorDataset(X_train_tensor, y_train_tensor), batch_size=batch_size, sampler=sampler)
 val_loader = DataLoader(TensorDataset(X_val_tensor, y_val_tensor), batch_size=batch_size, shuffle=False)
 test_loader = DataLoader(TensorDataset(X_test_tensor, y_test_tensor), batch_size=batch_size, shuffle=False)
 
