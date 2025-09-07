@@ -17,18 +17,24 @@
   </div>
 
   <!-- Local SHAP -->
-  <div id="local" class="tab-content active">
-      <h2>Local SHAP (Single Input)</h2>
-      <div id="feature-inputs"></div>
-      <button id="predict-btn" class="btn">Predict & Explain</button>
-      <div id="result">
-          <strong>Predicted Label:</strong> <span id="predicted-label">-</span>
-      </div>
-      <div class="visual-section">
-          <h4>Bar Plot (This Case)</h4>
-          <img id="shap_local_bar" src="" />
-      </div>
-  </div>
+<div id="local" class="tab-content active">
+    <h2>Local SHAP (Single Input)</h2>
+    <div id="feature-inputs" class="feature-inputs"></div>
+    <button id="predict-btn" class="btn">Predict & Explain</button>
+    <div id="result">
+        <strong>Predicted Label:</strong> <span id="predicted-label">-</span>
+    </div>
+
+    <div class="visual-section">
+        <h4>Bar Plot (Top Contributors)</h4>
+        <img id="shap_local_bar" src="" />
+    </div>
+
+    <div class="visual-section">
+        <h4>Waterfall Plot (This Case)</h4>
+        <img id="shap_local_waterfall" src="" />
+    </div>
+</div>
 
   <!-- Global SHAP -->
 <div id="global" class="tab-content container">
@@ -78,15 +84,25 @@ document.querySelectorAll(".tab").forEach(tab=>{
   });
 });
 
-// Generate inputs
+// Generate inputs with labels
 const inputsDiv = document.getElementById('feature-inputs');
 FEATURES.forEach(f=>{
+    const wrapper = document.createElement('div');
+    wrapper.classList.add('input-wrapper'); // optional, for styling
+
+    const label = document.createElement('label');
+    label.htmlFor = f;
+    label.innerText = f;
+
     const inp = document.createElement('input');
     inp.type='number';
     inp.id=f;
+    inp.value = DEFAULT_VALUES[f];  // default value
     inp.placeholder=f;
-    inp.value = DEFAULT_VALUES[f];  // <--- set default
-    inputsDiv.appendChild(inp);
+
+    wrapper.appendChild(label);
+    wrapper.appendChild(inp);
+    inputsDiv.appendChild(wrapper);
 });
 
 // Populate dropdown
@@ -109,7 +125,7 @@ document.getElementById('predict-btn').addEventListener('click', ()=>{
         if(data.error){ alert(data.error); return; }
         document.getElementById('predicted-label').innerText = data.predicted_label;
         document.getElementById('shap_local_bar').src = 'data:image/png;base64,'+data.shap_local_bar;
-
+        document.getElementById('shap_local_waterfall').src = 'data:image/png;base64,'+data.shap_local_waterfall;
     });
 });
 

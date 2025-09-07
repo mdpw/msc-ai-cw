@@ -139,3 +139,13 @@ button.btn:hover {
 .tab-content.active {
     display: block;
 }
+
+.feature-inputs .input-wrapper {
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+}
+.feature-inputs label {
+    font-weight: bold;
+    margin-bottom: 2px;
+}

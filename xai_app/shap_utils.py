@@ -49,17 +49,30 @@ def plot_to_base64():
 
 # ---------------- Main SHAP ----------------
 def predict_and_explain_shap(sample_df: pd.DataFrame, top_k=5, global_analysis=False):
-    # Load background data for SHAP explainer
+    """
+    Generates SHAP explanations for local or global analysis.
+    
+    Local analysis (single input):
+        - Returns predicted label
+        - Top K feature contributions (bar plot)
+        - Waterfall plot of SHAP contributions
+
+    Global analysis:
+        - Returns mean absolute SHAP values (bar plot)
+        - Dependence plot for first feature
+    """
+    # ---------------- Load background for SHAP ----------------
     try:
         background = pd.read_csv(TRAIN_CSV)[FEATURE_NAMES].sample(100, random_state=42)
         background_scaled = scaler.transform(background.values)
     except Exception as e:
         raise RuntimeError(f"Could not load background dataset: {e}")
-    
+
     explainer = shap.Explainer(model_predict, background_scaled)
     sample_array = scaler.transform(sample_df.values.astype(np.float32))
     shap_values_all = explainer(sample_array)
 
+    # ---------------- Global Analysis ----------------
     if global_analysis:
         # Handle multi-class: aggregate across classes
         if shap_values_all.values.ndim == 3:
@@ -67,7 +80,7 @@ def predict_and_explain_shap(sample_df: pd.DataFrame, top_k=5, global_analysis=F
         else:
             values = shap_values_all.values
 
-        # ---------------- Global Bar Plot ----------------
+        # Global Bar Plot
         plt.figure(figsize=(6,4))
         shap_vals_mean = np.abs(values).mean(axis=0)
         y_pos = np.arange(len(FEATURE_NAMES))
@@ -78,7 +91,7 @@ def predict_and_explain_shap(sample_df: pd.DataFrame, top_k=5, global_analysis=F
         plt.title("Global SHAP Feature Importance")
         shap_global_bar = plot_to_base64()
 
-        # ---------------- Dependence plot for first feature ----------------
+        # Dependence plot for first feature
         plt.figure()
         shap.dependence_plot(0, values, sample_df, show=False)
         plt.title("Global SHAP Dependence Plot (First Feature)")
@@ -90,19 +103,30 @@ def predict_and_explain_shap(sample_df: pd.DataFrame, top_k=5, global_analysis=F
             "values": values  # for JS dependence plots
         }
 
+    # ---------------- Local Analysis ----------------
     else:
-        # ---------------- Local Prediction ----------------
+        # Local Prediction
         with torch.no_grad():
             out = model(torch.tensor(sample_array))
         predicted_idx = int(torch.argmax(out[0]))
         predicted_label = label_encoder.inverse_transform([predicted_idx])[0]
 
-        # ---------------- Local SHAP values ----------------
-        shap_vals_1d = shap_values_all.values[0] if shap_values_all.values.ndim==2 else shap_values_all.values.ravel()
-        feat_contribs = [{"feature": f, "shap_value": float(v), "abs_value": abs(float(v))} for f,v in zip(FEATURE_NAMES, shap_vals_1d)]
+        # Handle multi-class SHAP
+        if shap_values_all.values.ndim == 3:
+            # values shape: (n_samples, n_features, n_classes)
+            shap_vals_1d = shap_values_all.values[0, :, predicted_idx]   # pick predicted class
+            base_value = shap_values_all.base_values[0, predicted_idx]
+        else:
+            shap_vals_1d = shap_values_all.values[0].ravel()
+            base_value = shap_values_all.base_values[0]
+
+        # ---------------- Top-K Feature Contributions (Bar Plot) ----------------
+        feat_contribs = [
+            {"feature": f, "shap_value": float(v), "abs_value": abs(float(v))}
+            for f, v in zip(FEATURE_NAMES, shap_vals_1d)
+        ]
         feat_contribs_sorted = sorted(feat_contribs, key=lambda d: d["abs_value"], reverse=True)[:top_k]
 
-        # ---------------- Bar Plot ----------------
         plt.figure(figsize=(6,4))
         top_features = [d['feature'] for d in feat_contribs_sorted]
         top_shap_vals = [d['shap_value'] for d in feat_contribs_sorted]
@@ -111,14 +135,27 @@ def predict_and_explain_shap(sample_df: pd.DataFrame, top_k=5, global_analysis=F
         plt.yticks(y_pos, top_features)
         plt.gca().invert_yaxis()
         plt.xlabel('SHAP value')
-        plt.title("Top Feature Contributions")
+        plt.title("Top Feature Contributions (Bar)")
         shap_local_bar = plot_to_base64()
+
+        # ---------------- Waterfall Plot ----------------
+        plt.figure(figsize=(8,5))
+        expl = shap.Explanation(
+            values=shap_vals_1d,
+            base_values=base_value,
+            data=sample_df.values[0],
+            feature_names=FEATURE_NAMES
+        )
+        shap.plots.waterfall(expl, show=False)
+        plt.title("Local SHAP Waterfall Plot")
+        shap_local_waterfall = plot_to_base64()
 
         return {
             "predicted_label": predicted_label,
             "top_contributors": feat_contribs_sorted,
             "all_contributors": feat_contribs,
-            "shap_local_bar": shap_local_bar
+            "shap_local_bar": shap_local_bar,
+            "shap_local_waterfall": shap_local_waterfall
         }
 
 # ---------------- Dependence Plot ----------------
