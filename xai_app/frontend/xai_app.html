@@ -25,8 +25,8 @@
           <strong>Predicted Label:</strong> <span id="predicted-label">-</span>
       </div>
       <div class="visual-section">
-          <h4>Waterfall Plot (This Case)</h4>
-          <img id="shap-local-waterfall" src="" />
+          <h4>Bar Plot (This Case)</h4>
+          <img id="shap_local_bar" src="" />
       </div>
   </div>
 
@@ -108,7 +108,8 @@ document.getElementById('predict-btn').addEventListener('click', ()=>{
     }).then(r=>r.json()).then(data=>{
         if(data.error){ alert(data.error); return; }
         document.getElementById('predicted-label').innerText = data.predicted_label;
-        document.getElementById('shap-local-waterfall').src = 'data:image/png;base64,'+data.shap_local_waterfall;
+        document.getElementById('shap_local_bar').src = 'data:image/png;base64,'+data.shap_local_bar;
+
     });
 });
 

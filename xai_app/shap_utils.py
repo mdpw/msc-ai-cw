@@ -18,6 +18,7 @@ with open(os.path.join(MODELS_DIR, 'feature_names.json'), 'r') as f:
     FEATURE_NAMES = json.load(f)
 
 MODEL_PATH = os.path.join(MODELS_DIR, 'best_model.pth')
+TRAIN_CSV = os.path.join(MODELS_DIR, 'train_for_shap_original.csv')
 
 # ---------------- Load ANN ----------------
 input_size = len(FEATURE_NAMES)
@@ -29,9 +30,12 @@ model.eval()
 
 # ---------------- Helpers ----------------
 def model_predict(X):
-    if isinstance(X, pd.DataFrame): X = X.values
-    if isinstance(X, np.ndarray): X = torch.tensor(X, dtype=torch.float32)
-    with torch.no_grad(): return model(X).numpy()
+    if isinstance(X, pd.DataFrame): 
+        X = X.values
+    if isinstance(X, np.ndarray): 
+        X = torch.tensor(X, dtype=torch.float32)
+    with torch.no_grad(): 
+        return model(X).numpy()
 
 def plot_to_base64():
     buf = BytesIO()
@@ -44,17 +48,21 @@ def plot_to_base64():
 
 # ---------------- Main SHAP ----------------
 def predict_and_explain_shap(sample_df: pd.DataFrame, top_k=5, global_analysis=False):
-    explainer = shap.Explainer(model_predict, sample_df.values)
+    # Load background data for SHAP explainer
+    try:
+        background = pd.read_csv(TRAIN_CSV)[FEATURE_NAMES].sample(100, random_state=42)
+    except Exception as e:
+        raise RuntimeError(f"Could not load background dataset: {e}")
+
+    explainer = shap.Explainer(model_predict, background.values)
     shap_values_all = explainer(sample_df.values)
 
     if global_analysis:
         # Handle multi-class: aggregate across classes
         if shap_values_all.values.ndim == 3:
             values = shap_values_all.values.mean(axis=2)
-            base_values = shap_values_all.base_values.mean(axis=1)
         else:
             values = shap_values_all.values
-            base_values = shap_values_all.base_values
 
         # ---------------- Global Bar Plot ----------------
         plt.figure(figsize=(6,4))
@@ -108,7 +116,7 @@ def predict_and_explain_shap(sample_df: pd.DataFrame, top_k=5, global_analysis=F
             "predicted_label": predicted_label,
             "top_contributors": feat_contribs_sorted,
             "all_contributors": feat_contribs,
-            "shap_local_waterfall": shap_local_bar
+            "shap_local_bar": shap_local_bar
         }
 
 # ---------------- Dependence Plot ----------------
