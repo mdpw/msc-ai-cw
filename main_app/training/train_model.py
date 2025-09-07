@@ -140,3 +140,95 @@ plt.legend()
 
 plt.tight_layout()
 plt.show()
+
+
+# ---------------------------
+# Final Evaluation & Visualization
+# ---------------------------
+print("\nEvaluating best model on test set...")
+
+# Load the best model
+model.load_state_dict(torch.load(model_path))
+model.eval()
+
+y_true, y_pred = [], []
+with torch.no_grad():
+    for inputs, labels in test_loader:
+        outputs = model(inputs)
+        _, predicted = torch.max(outputs, 1)
+        y_true.extend(labels.numpy())
+        y_pred.extend(predicted.numpy())
+
+# ---------------------------
+# Confusion Matrix
+# ---------------------------
+cm = confusion_matrix(y_true, y_pred)
+plt.figure(figsize=(8, 6))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
+            xticklabels=le.classes_, yticklabels=le.classes_)
+plt.xlabel("Predicted")
+plt.ylabel("True")
+plt.title("Confusion Matrix")
+plt.show()
+
+# ---------------------------
+# Classification Report Heatmap
+# ---------------------------
+from sklearn.metrics import classification_report
+import pandas as pd
+
+report = classification_report(y_true, y_pred, target_names=le.classes_, output_dict=True)
+df_report = pd.DataFrame(report).transpose()
+
+plt.figure(figsize=(10, 6))
+sns.heatmap(df_report.iloc[:-1, :-1], annot=True, cmap="Greens", fmt=".2f")
+plt.title("Classification Report Heatmap")
+plt.show()
+
+# ---------------------------
+# ROC & Precision-Recall Curves
+# ---------------------------
+from sklearn.metrics import roc_curve, auc, precision_recall_curve, average_precision_score
+from sklearn.preprocessing import label_binarize
+
+# Binarize labels for multi-class curves
+y_true_bin = label_binarize(y_true, classes=range(output_size))
+y_score = model(torch.tensor(X_test_scaled, dtype=torch.float)).detach().numpy()
+
+# ROC curves
+plt.figure(figsize=(10, 7))
+for i, class_name in enumerate(le.classes_):
+    fpr, tpr, _ = roc_curve(y_true_bin[:, i], y_score[:, i])
+    roc_auc = auc(fpr, tpr)
+    plt.plot(fpr, tpr, label=f"{class_name} (AUC={roc_auc:.2f})")
+
+plt.plot([0, 1], [0, 1], "k--")
+plt.xlabel("False Positive Rate")
+plt.ylabel("True Positive Rate")
+plt.title("ROC Curves")
+plt.legend()
+plt.show()
+
+# Precision-Recall curves
+plt.figure(figsize=(10, 7))
+for i, class_name in enumerate(le.classes_):
+    precision, recall, _ = precision_recall_curve(y_true_bin[:, i], y_score[:, i])
+    ap = average_precision_score(y_true_bin[:, i], y_score[:, i])
+    plt.plot(recall, precision, label=f"{class_name} (AP={ap:.2f})")
+
+plt.xlabel("Recall")
+plt.ylabel("Precision")
+plt.title("Precision-Recall Curves")
+plt.legend()
+plt.show()
+
+# ---------------------------
+# Learning Rate Schedule (Optional)
+# ---------------------------
+# Note: AdamW keeps lr in optimizer param_groups
+lrs = [group['lr'] for group in optimizer.param_groups]
+plt.plot(lrs, marker='o')
+plt.title("Learning Rate Schedule")
+plt.xlabel("Step")
+plt.ylabel("Learning Rate")
+plt.show()
