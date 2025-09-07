@@ -33,6 +33,7 @@ def model_predict(X):
     if isinstance(X, pd.DataFrame): 
         X = X.values
     if isinstance(X, np.ndarray): 
+        X = scaler.transform(X)   # 🔹 scale raw features here
         X = torch.tensor(X, dtype=torch.float32)
     with torch.no_grad(): 
         return model(X).numpy()
@@ -51,11 +52,13 @@ def predict_and_explain_shap(sample_df: pd.DataFrame, top_k=5, global_analysis=F
     # Load background data for SHAP explainer
     try:
         background = pd.read_csv(TRAIN_CSV)[FEATURE_NAMES].sample(100, random_state=42)
+        background_scaled = scaler.transform(background.values)
     except Exception as e:
         raise RuntimeError(f"Could not load background dataset: {e}")
-
-    explainer = shap.Explainer(model_predict, background.values)
-    shap_values_all = explainer(sample_df.values)
+    
+    explainer = shap.Explainer(model_predict, background_scaled)
+    sample_array = scaler.transform(sample_df.values.astype(np.float32))
+    shap_values_all = explainer(sample_array)
 
     if global_analysis:
         # Handle multi-class: aggregate across classes
@@ -89,7 +92,6 @@ def predict_and_explain_shap(sample_df: pd.DataFrame, top_k=5, global_analysis=F
 
     else:
         # ---------------- Local Prediction ----------------
-        sample_array = sample_df.values.astype(np.float32)
         with torch.no_grad():
             out = model(torch.tensor(sample_array))
         predicted_idx = int(torch.argmax(out[0]))
