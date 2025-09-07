@@ -2,22 +2,31 @@
 <html>
 <head>
     <title>Cinnamon Quality Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
-<body style="font-family: Arial; padding: 20px;">
-    <h2>Cinnamon Quality Analyzer</h2>
-    <form method="post">
-        <label for="prompt">Enter Grading Rules / Prompt:</label><br>
-        <textarea name="prompt" rows="6" cols="60">You are an expert quality grader. Return Low, Medium, or High only.</textarea><br><br>
+<body>
+    <div class="container">
+        <h1>Cinnamon Quality Analyzer - GenAI</h1>
+        <form method="post">
+            <div class="form-group">
+                <label for="prompt">Enter Grading Rules / Prompt:</label>
+                <textarea id="prompt" name="prompt" rows="6">You are an expert quality grader. Return Low, Medium, or High only.</textarea>
+            </div>
 
-        <label for="features">Enter Cinnamon Features:</label><br>
-        <textarea name="features" rows="6" cols="60">Moisture: 7.5, Ash: 1.3, Volatile_Oil: 2.1, Acid_Insoluble_Ash: 0.16, Chromium: 0.43, Coumarin: 0.36, Fiber: 10.79, Density: 0.91, Oil_Content: 6.02, Resin: 2.35, Pesticide_Level: 0.013, PH_Value: 5.9</textarea><br><br>
+            <div class="form-group">
+                <label for="features">Enter Cinnamon Features:</label>
+                <textarea id="features" name="features" rows="6">Moisture: 7.5, Ash: 1.3, Volatile_Oil: 2.1, Acid_Insoluble_Ash: 0.16, Chromium: 0.43, Coumarin: 0.36, Fiber: 10.79, Density: 0.91, Oil_Content: 6.02, Resin: 2.35, Pesticide_Level: 0.013, PH_Value: 5.9</textarea>
+            </div>
 
-        <button type="submit">Analyze Quality</button>
-    </form>
+            <button type="submit" class="btn">Analyze Quality</button>
 
-    {% if response %}
-    <h3>Analysis Result:</h3>
-    <p>{{ response }}</p>
-    {% endif %}
+            {% if response %}
+            <div id="result">
+                <h3>Analysis Result:</h3>
+                <p>{{ response }}</p>
+            </div>
+            {% endif %}
+        </form>
+    </div>
 </body>
 </html>

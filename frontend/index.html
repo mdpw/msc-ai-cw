@@ -1,14 +1,69 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>AI Project Hub</title>
+    <title>Cinnamon Quality Predictor - AI Hub</title>
+    <link rel="stylesheet" href="static/styles.css"> <!-- your existing CSS -->
+    <style>
+        /* Additional styles for button links */
+        .app-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 40px;
+            margin-top: 30px;
+        }
+        .app-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            border: none;
+            background-color: rgba(255, 248, 240, 0.95);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 150px;
+            text-align: center;
+            color: #3e2f2f;
+            font-weight: bold;
+        }
+        .app-button img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            margin-bottom: 10px;
+            border-radius: 10px;
+        }
+        .app-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        @media (max-width: 700px) {
+            .app-container {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>AI Project Hub</h1>
-    <ul>
-        <li><a href="http://localhost:8001/" target="_blank">Main App (Predictions)</a></li>
-        <li><a href="http://localhost:8002/" target="_blank">XAI App (SHAP Explanations)</a></li>
-        <li><a href="http://localhost:8003/" target="_blank">GenAI App</a></li>
-    </ul>
+    <div class="container">
+        <h1>Cinnamon Quality Predicting AI Hub</h1>
+        <div class="app-container">
+            <a href="http://localhost:8001/" target="_blank" class="app-button">
+                <img src="static/images/mainapp.png" alt="Main App">
+                <span>Quality Predictor</span>
+            </a>
+            <a href="http://localhost:8002/" target="_blank" class="app-button">
+                <img src="static/images/shap.png" alt="XAI App">
+                <span>XAI SHAP</span>
+            </a>
+            <a href="http://localhost:8003/" target="_blank" class="app-button">
+                <img src="static/images/GenAI.png" alt="GenAI App">
+                <span>GenAI</span>
+            </a>
+        </div>
+    </div>
 </body>
 </html>

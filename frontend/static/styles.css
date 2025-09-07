@@ -1,0 +1,106 @@
+/* General body style with cinnamon background */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(rgba(255, 248, 240, 0.6), rgba(255, 248, 240, 0.6)),
+                url('images/cinnamon.jpg') no-repeat center center fixed;
+    background-size: cover;
+    margin: 0;
+    padding: 0;
+    color: #3e2f2f;
+}
+
+/* Container style */
+.container {
+    max-width: 900px; /* wider for 2-column layout */
+    margin: 50px auto;
+    background-color: rgba(255, 248, 240, 0.95);
+    padding: 30px 40px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    text-align: center;
+}
+
+/* Title style */
+h1 {
+    color: #5a2c0d;
+    margin-bottom: 25px;
+}
+
+/* Form layout as 2 columns */
+form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px 40px; /* row gap, column gap */
+}
+
+/* Form groups */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+/* Labels */
+label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+/* Inputs */
+input[type="text"],
+input[type="number"] {
+    padding: 10px;
+    border: 2px solid #d9a066;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 1rem;
+    color: #3e2f2f;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Remove number spinner */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"] {
+    -moz-appearance: textfield; /* Firefox */
+}
+
+/* Submit button spanning both columns */
+button.btn {
+    grid-column: span 2;
+    padding: 12px;
+    font-size: 16px;
+    border: none;
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+button.btn:hover {
+    background-color: #45a049;
+}
+
+/* Result text */
+#result {
+    grid-column: span 2;
+    text-align: center;
+    margin-top: 20px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #3e2f2f;
+}
+
+/* Responsive: stack to 1 column on small screens */
+@media (max-width: 700px) {
+    form {
+        grid-template-columns: 1fr;
+    }
+    button.btn {
+        grid-column: 1;
+    }
+}

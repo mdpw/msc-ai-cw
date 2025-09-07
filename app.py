@@ -3,11 +3,7 @@ from flask import Flask, render_template
 # -------------------------
 # Initialize root Flask app
 # -------------------------
-app = Flask(
-    __name__,
-    template_folder='frontend',  # root templates folder for homepage
-    static_folder='static'       # optional static folder for root-level CSS/JS
-)
+app = Flask(__name__, template_folder='frontend', static_folder='frontend/static')
 
 # -------------------------
 # Root homepage

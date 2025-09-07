@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-app = Flask(__name__, template_folder='frontend', static_folder='static')
+app = Flask(__name__, template_folder='frontend', static_folder='frontend/static')
 
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
@@ -26,4 +26,4 @@ def analyze_cinnamon_quality(prompt_text, features_text):
 
 if __name__ == "__main__":
     # Run on port 5000
-    app.run(debug=True, host="0.0.0.0", port=8002)
+    app.run(debug=True, host="0.0.0.0", port=8003)
