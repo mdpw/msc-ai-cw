@@ -1,0 +1,141 @@
+/* General body style with cinnamon background */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(rgba(255, 248, 240, 0.6), rgba(255, 248, 240, 0.6)),
+                url('../images/cinnamon.jpg') no-repeat center center fixed;
+    background-size: cover;
+    margin: 0;
+    padding: 0;
+    color: #3e2f2f;
+}
+
+/* Container style */
+.container {
+    max-width: 1000px;
+    margin: 40px auto;
+    background-color: rgba(255, 248, 240, 0.95);
+    padding: 30px 40px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* Titles */
+h1 {
+    color: #5a2c0d;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+h2 {
+    color: #7a3b15;
+    margin-top: 30px;
+    margin-bottom: 15px;
+}
+
+/* Feature input grid */
+#feature-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px 25px;
+    margin-bottom: 20px;
+}
+
+#feature-inputs input {
+    padding: 10px;
+    border: 2px solid #d9a066;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #3e2f2f;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Remove number spinner */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+/* Buttons */
+button.btn {
+    padding: 12px 20px;
+    font-size: 16px;
+    border: none;
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 10px 0;
+}
+button.btn:hover {
+    background-color: #45a049;
+}
+
+/* Result text */
+#result {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #3e2f2f;
+}
+
+/* Visual sections */
+.visual-section {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.visual-section img {
+    max-width: 90%;
+    border: 2px solid #d9a066;
+    border-radius: 10px;
+    padding: 6px;
+    background: #fffaf2;
+    margin-top: 10px;
+}
+
+/* Responsive: stack to 1 column */
+@media (max-width: 700px) {
+    #feature-inputs {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Tabs container */
+.tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #d9a066;
+}
+
+.tab {
+    padding: 12px 20px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #5a2c0d;
+    border-radius: 8px 8px 0 0;
+    margin: 0 5px;
+    background: #f5e1c8;
+    transition: background 0.3s;
+}
+
+.tab.active {
+    background: #fff8f0;
+    border: 2px solid #d9a066;
+    border-bottom: none;
+}
+
+/* Tab content panels */
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}

@@ -1,61 +1,103 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>SHAP Explanations</title>
-<style>
-body { font-family: Arial; margin:20px; }
-h2 { color:#333; }
-img { max-width:600px; border:1px solid #ccc; padding:5px; }
-input { width:80px; margin:2px; }
-button { margin:5px; }
-.radio-group { margin-bottom:10px; }
-</style>
+  <meta charset="UTF-8">
+  <title>SHAP Explanations</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
 
-<h2>Local SHAP (Single Input)</h2>
-<div id="local-section">
-    <div id="feature-inputs"></div>
-    <button id="predict-btn">Predict & Explain</button>
-    <div>
-        <strong>Predicted Label:</strong> <span id="predicted-label">-</span>
+<div class="container">
+  <h1>SHAP Explanations for Cinnamon Quality</h1>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active" data-tab="local">Local SHAP</div>
+    <div class="tab" data-tab="global">Global SHAP</div>
+  </div>
+
+  <!-- Local SHAP -->
+  <div id="local" class="tab-content active">
+      <h2>Local SHAP (Single Input)</h2>
+      <div id="feature-inputs"></div>
+      <button id="predict-btn" class="btn">Predict & Explain</button>
+      <div id="result">
+          <strong>Predicted Label:</strong> <span id="predicted-label">-</span>
+      </div>
+      <div class="visual-section">
+          <h4>Waterfall Plot (This Case)</h4>
+          <img id="shap-local-waterfall" src="" />
+      </div>
+  </div>
+
+  <!-- Global SHAP -->
+<div id="global" class="tab-content container">
+    <h2>Global SHAP</h2>
+    <button id="global-btn" class="btn">Load Global SHAP</button>
+
+    <div class="visual-section">
+        <h4>Feature Importance (Bar Plot)</h4>
+        <img id="shap-global-bar" src="" />
     </div>
-    <img id="shap-local" src="" />
-    <ul id="top-features"></ul>
+
+    <div class="visual-section">
+        <h4>Dependence Plot (Select Feature)</h4>
+        <select id="feature-select">
+        </select>
+        <button id="dependence-btn" class="btn">Show Dependence Plot</button>
+        <img id="shap-global-dependence" src="" />
+    </div>
 </div>
-
-<hr>
-
-<h2>Global SHAP</h2>
-<div id="global-section">
-    <div class="radio-group">
-        <strong>Select Class:</strong>
-        <label><input type="radio" name="class-select" value="" checked> Aggregate</label>
-        <label><input type="radio" name="class-select" value="High"> High</label>
-        <label><input type="radio" name="class-select" value="Medium"> Medium</label>
-        <label><input type="radio" name="class-select" value="Low"> Low</label>
-    </div>
-    <button id="global-btn">Load Global SHAP</button>
-    <div>
-        <h4>Summary Plot</h4><img id="shap-global-summary" src="" />
-        <h4>Dependence Plot</h4><img id="shap-global-dependence" src="" />
-        <h4>Beeswarm Plot</h4><img id="shap-global-beeswarm" src="" />
-        <h4>Force Plot (first sample)</h4><img id="shap-global-force" src="" />
-    </div>
 </div>
 
 <script>
 const FEATURES = ["Moisture","Ash","Volatile_Oil","Acid_Insoluble_Ash","Chromium","Coumarin","Fiber","Density","Oil_Content","Resin","Pesticide_Level","PH_Value"];
 
-// Generate input boxes for Local SHAP
+const DEFAULT_VALUES = {
+    "Moisture": 7.573517876694799,
+    "Ash": 1.327439423202109,
+    "Volatile_Oil": 2.0912413100313714,
+    "Acid_Insoluble_Ash": 0.1618542921215591,
+    "Chromium": 0.43037713048648674,
+    "Coumarin": 0.36282449006450246,
+    "Fiber": 10.792416727036484,
+    "Density": 0.9128768352865284,
+    "Oil_Content": 6.022598957291718,
+    "Resin": 2.3581499071562795,
+    "Pesticide_Level": 0.013171581881226115,
+    "PH_Value": 5.901047299
+};
+
+// Tabs functionality
+document.querySelectorAll(".tab").forEach(tab=>{
+  tab.addEventListener("click", ()=>{
+    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+    document.querySelectorAll(".tab-content").forEach(c=>c.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById(tab.dataset.tab).classList.add("active");
+  });
+});
+
+// Generate inputs
 const inputsDiv = document.getElementById('feature-inputs');
 FEATURES.forEach(f=>{
-    const inp = document.createElement('input'); inp.type='number'; inp.id=f; inp.placeholder=f;
+    const inp = document.createElement('input');
+    inp.type='number';
+    inp.id=f;
+    inp.placeholder=f;
+    inp.value = DEFAULT_VALUES[f];  // <--- set default
     inputsDiv.appendChild(inp);
 });
 
-// ---------------- Local SHAP ----------------
+// Populate dropdown
+const featureSelect = document.getElementById("feature-select");
+FEATURES.forEach((f, idx)=>{
+    const opt = document.createElement("option");
+    opt.value = idx; opt.text = f;
+    featureSelect.appendChild(opt);
+});
+
+// Local SHAP
 document.getElementById('predict-btn').addEventListener('click', ()=>{
     const payload = {};
     FEATURES.forEach(f=>{ payload[f] = parseFloat(document.getElementById(f).value || 0); });
@@ -66,29 +108,26 @@ document.getElementById('predict-btn').addEventListener('click', ()=>{
     }).then(r=>r.json()).then(data=>{
         if(data.error){ alert(data.error); return; }
         document.getElementById('predicted-label').innerText = data.predicted_label;
-        document.getElementById('shap-local').src = 'data:image/png;base64,'+data.shap_local_bar;
-        const ul = document.getElementById('top-features'); ul.innerHTML='';
-        data.top_contributors.forEach(item=>{
-            const li=document.createElement('li');
-            li.innerText = `${item.feature}: SHAP=${item.shap_value.toFixed(4)}`;
-            ul.appendChild(li);
-        });
+        document.getElementById('shap-local-waterfall').src = 'data:image/png;base64,'+data.shap_local_waterfall;
     });
 });
 
-// ---------------- Global SHAP ----------------
+// Load Global SHAP
 document.getElementById('global-btn').addEventListener('click', ()=>{
-    // Get selected class
-    const radios = document.getElementsByName('class-select');
-    let selectedClass = '';
-    radios.forEach(r => { if(r.checked) selectedClass = r.value; });
-
-    fetch(`/global_shap?class_name=${selectedClass}`).then(r=>r.json()).then(data=>{
+    fetch('/global_shap').then(r=>r.json()).then(data=>{
         if(data.error){ alert(data.error); return; }
-        document.getElementById('shap-global-summary').src='data:image/png;base64,'+data.shap_global_summary;
+        document.getElementById('shap-global-bar').src='data:image/png;base64,'+data.shap_global_bar;
+        // initial dependence plot = first feature
         document.getElementById('shap-global-dependence').src='data:image/png;base64,'+data.shap_global_dependence;
-        document.getElementById('shap-global-beeswarm').src='data:image/png;base64,'+data.shap_global_beeswarm;
-        document.getElementById('shap-global-force').src='data:image/png;base64,'+data.shap_global_force;
+    });
+});
+
+// Dependence plot for selected feature
+document.getElementById('dependence-btn').addEventListener('click', ()=>{
+    const featureIndex = document.getElementById('feature-select').value;
+    fetch(`/dependence_plot?feature_index=${featureIndex}`).then(r=>r.json()).then(data=>{
+        if(data.error){ alert(data.error); return; }
+        document.getElementById('shap-global-dependence').src='data:image/png;base64,'+data.shap_global_dependence;
     });
 });
 </script>
