@@ -6,7 +6,9 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-
+<div id="loading-notification" style="display:none; position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#fffae6; color:#333; padding:10px 20px; border-radius:5px; box-shadow:0 2px 5px rgba(0,0,0,0.2); z-index:999;">
+    Please wait...
+</div>
 <div class="container">
   <h1>SHAP Explanations for Cinnamon Quality</h1>
 
@@ -57,6 +59,12 @@
 </div>
 
 <script>
+function showLoading() {
+    document.getElementById('loading-notification').style.display = 'block';
+}
+function hideLoading() {
+    document.getElementById('loading-notification').style.display = 'none';
+}
 const FEATURES = ["Moisture","Ash","Volatile_Oil","Acid_Insoluble_Ash","Chromium","Coumarin","Fiber","Density","Oil_Content","Resin","Pesticide_Level","PH_Value"];
 
 const DEFAULT_VALUES = {
@@ -117,34 +125,50 @@ FEATURES.forEach((f, idx)=>{
 document.getElementById('predict-btn').addEventListener('click', ()=>{
     const payload = {};
     FEATURES.forEach(f=>{ payload[f] = parseFloat(document.getElementById(f).value || 0); });
+
+    showLoading();  // show notification
+
     fetch('/predict_shap',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body: JSON.stringify(payload)
     }).then(r=>r.json()).then(data=>{
+        hideLoading(); // hide notification
         if(data.error){ alert(data.error); return; }
         document.getElementById('predicted-label').innerText = data.predicted_label;
         document.getElementById('shap_local_bar').src = 'data:image/png;base64,'+data.shap_local_bar;
         document.getElementById('shap_local_waterfall').src = 'data:image/png;base64,'+data.shap_local_waterfall;
+    }).catch(e=>{
+        hideLoading();
+        alert('Error: ' + e);
     });
 });
 
 // Load Global SHAP
 document.getElementById('global-btn').addEventListener('click', ()=>{
+    showLoading();
     fetch('/global_shap').then(r=>r.json()).then(data=>{
+        hideLoading();
         if(data.error){ alert(data.error); return; }
         document.getElementById('shap-global-bar').src='data:image/png;base64,'+data.shap_global_bar;
-        // initial dependence plot = first feature
         document.getElementById('shap-global-dependence').src='data:image/png;base64,'+data.shap_global_dependence;
+    }).catch(e=>{
+        hideLoading();
+        alert('Error: ' + e);
     });
 });
 
 // Dependence plot for selected feature
 document.getElementById('dependence-btn').addEventListener('click', ()=>{
     const featureIndex = document.getElementById('feature-select').value;
+    showLoading();
     fetch(`/dependence_plot?feature_index=${featureIndex}`).then(r=>r.json()).then(data=>{
+        hideLoading();
         if(data.error){ alert(data.error); return; }
         document.getElementById('shap-global-dependence').src='data:image/png;base64,'+data.shap_global_dependence;
+    }).catch(e=>{
+        hideLoading();
+        alert('Error: ' + e);
     });
 });
 </script>
