@@ -23,7 +23,7 @@ TRAIN_CSV = os.path.join(MODELS_DIR, 'train_for_shap_original.csv')
 # ---------------- Load ANN ----------------
 input_size = len(FEATURE_NAMES)
 output_size = len(label_encoder.classes_)
-from main_app.backend.model import ANN
+from main_app.backend.best_model import ANN
 model = ANN(input_size, 128, 64, output_size, 0.2)
 model.load_state_dict(torch.load(MODEL_PATH, map_location='cpu'))
 model.eval()

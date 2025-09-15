@@ -1,12 +1,13 @@
 import os
 import torch
 import pandas as pd
-from backend.model import ANN
-from training.preprocess import scaler, le, X_train_tensor
+from main_app.backend.best_model import ANN
+from main_app.training.preprocess import scaler, le, X_train_tensor
 
+# ---------------------------
 # Prediction function
+# ---------------------------
 def predict_quality(
-    model_class,            # Your ANN class
     model_path,             # Path to saved model weights, e.g., "backend/model/best_model.pth"
     scaler,                 # Fitted StandardScaler used during training
     label_encoder,          # Fitted LabelEncoder used during training
@@ -16,18 +17,20 @@ def predict_quality(
     new_data_scaled = scaler.transform(new_data)
     new_data_tensor = torch.tensor(new_data_scaled, dtype=torch.float32)
 
-    # 2. Load model
+    # 2. Load model with best hyperparameters
     input_size = X_train_tensor.shape[1]
-    hidden_size = 64
+    hidden1_size = 128
+    hidden2_size = 64
     output_size = len(le.classes_)
     dropout_rate = 0.2
-    
+
     model = ANN(
-    input_size=input_size,
-    hidden_size=hidden_size,
-    output_size=output_size,
-    dropout_rate=dropout_rate
-)
+        input_size=input_size,
+        hidden1_size=hidden1_size,
+        hidden2_size=hidden2_size,
+        output_size=output_size,
+        dropout_rate=dropout_rate
+    )
     model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
     model.eval()  # Set to evaluation mode
 
@@ -39,35 +42,39 @@ def predict_quality(
 
     # 4. Convert indices to labels
     predicted_labels = label_encoder.inverse_transform(predicted_indices.numpy())
-    return predicted_labels, probabilities
+    return predicted_labels, probabilities.numpy()
 
-# Example usage - This should return Low
-new_samples = pd.DataFrame([
-    {
-        "Moisture": 13.66064476,
-        "Ash": 7.418681347266111,
-        "Volatile_Oil": 0.8231678150936274,
-        "Acid_Insoluble_Ash": 0.5084406430686356,
-        "Chromium": -0.092484138,
-        "Coumarin": -0.117050129
-    }
-])
+# ---------------------------
+# Example usage
+# ---------------------------
+if __name__ == "__main__":
+    new_samples = pd.DataFrame([
+        {
+            "Moisture": 7.5736,
+            "Ash": 1.3275,
+            "Volatile_Oil": 2.0913,
+            "Acid_Insoluble_Ash": 0.1619,
+            "Chromium": 0.4304,
+            "Coumarin": 0.3629,
+            "Fiber": 10.7925,
+            "Density": 0.9129,
+            "Oil_Content": 6.0226,
+            "Resin": 2.3582,
+            "Pesticide_Level": 0.0132,
+            "PH_Value": 5.9011
+        }
+    ])
 
-							
-			
+    # Model path
+    model_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../backend/model/best_model.pth'))
+    os.makedirs(os.path.dirname(model_path), exist_ok=True)
 
+    predicted_labels, probabilities = predict_quality(
+        model_path=model_path,
+        scaler=scaler,
+        label_encoder=le,
+        new_data=new_samples
+    )
 
-# Model path
-model_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../backend/model/best_model.pth'))
-os.makedirs(os.path.dirname(model_path), exist_ok=True)
-
-predicted_labels, probabilities = predict_quality(
-    model_class=ANN,
-    model_path=model_path,
-    scaler=scaler,
-    label_encoder=le,
-    new_data=new_samples
-)
-
-print("Predicted labels:", predicted_labels)
-print("Predicted probabilities:\n", probabilities)
+    print("Predicted labels:", predicted_labels)
+    print("Predicted probabilities:\n", probabilities)

@@ -1,5 +1,5 @@
 import torch
-from .model import ANN
+from .best_model import ANN
 from training.preprocess import X_train_tensor, le
 
 # Infer input/output size from training data
