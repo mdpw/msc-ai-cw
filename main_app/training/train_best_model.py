@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from main_app.config import CONFIG
 
 # ---------------------------
 # Import preprocessed data and ANN
@@ -24,15 +25,16 @@ from main_app.training.preprocess import (
 # Hyperparameters & Setup
 # ---------------------------
 input_size = X_train_tensor.shape[1]
-hidden1_size = 128
-hidden2_size = 64
 output_size = len(le.classes_)
-dropout_rate = 0.2
-learning_rate = 0.001
-num_epochs = 150
-patience = 10
-weight_decay = 1e-4
-factor = 0.5
+
+hidden1_size = CONFIG["model"]["hidden1_size"]
+hidden2_size = CONFIG["model"]["hidden2_size"]
+dropout_rate = CONFIG["model"]["dropout_rate"]
+learning_rate = CONFIG["training"]["learning_rate"]
+num_epochs = CONFIG["training"]["num_epochs"]
+weight_decay = CONFIG["training"]["weight_decay"]
+factor = CONFIG["training"]["factor"]
+patience = CONFIG["training"]["patience"]
 
 # Model, loss, optimizer, and scheduler
 model = ANN(

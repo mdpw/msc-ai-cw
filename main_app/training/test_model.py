@@ -3,6 +3,9 @@ import torch
 import pandas as pd
 from main_app.backend.best_model import ANN
 from main_app.training.preprocess import scaler, le, X_train_tensor
+from main_app.config import CONFIG
+import torch.nn as nn
+import torch.optim as optim
 
 # ---------------------------
 # Prediction function
@@ -18,11 +21,12 @@ def predict_quality(
     new_data_tensor = torch.tensor(new_data_scaled, dtype=torch.float32)
 
     # 2. Load model with best hyperparameters
-    input_size = X_train_tensor.shape[1]
-    hidden1_size = 128
-    hidden2_size = 64
+    input_size = X_train_tensor.shape[1]    
     output_size = len(le.classes_)
-    dropout_rate = 0.2
+
+    hidden1_size = CONFIG["model"]["hidden1_size"]
+    hidden2_size = CONFIG["model"]["hidden2_size"]
+    dropout_rate = CONFIG["model"]["dropout_rate"]
 
     model = ANN(
         input_size=input_size,
@@ -31,6 +35,7 @@ def predict_quality(
         output_size=output_size,
         dropout_rate=dropout_rate
     )
+
     model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
     model.eval()  # Set to evaluation mode
 
