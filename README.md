@@ -12,3 +12,24 @@ Current manual quality testing is slow, subjective, and inconsistent. By applyin
 
 
 
+Steps to Run Commands
+
+## To train the ANN base model 
+1. Go to root folder
+2. Execute command: python -m main_app.training.train_base_model  
+
+## To train the ANN best model 
+1. Go to root folder
+2. Execute command: python -m main_app.training.train_best_model 
+
+## To start Cinnamon Quiality App
+1. Go to root folder
+2. Open terminal 1
+3. Execute command: python -m main_app.app (This will open Main app in port 8001)
+4. Open terminal 2
+5. Execute command: python xai_app/app.py (This will open XAI app in port 8002)
+6. Open terminal 3
+7. Execute command: python genai_app/app.py (This will open GenAI app in port 8003)
+8. Open terminal 4
+9. Execute command: python app.py (This will open App with the home page in port 5000)
+10. Go the browser and browse http://127.0.0.1:5000

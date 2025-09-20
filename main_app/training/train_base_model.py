@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import confusion_matrix, classification_report, roc_curve, auc, precision_recall_curve, average_precision_score
 from sklearn.preprocessing import label_binarize
+from config import CONFIG
 
 # ---------------------------
 # Import preprocessed data
@@ -26,10 +27,11 @@ from main_app.training.preprocess import (
 # Hyperparameters (Baseline)
 # ---------------------------
 input_size = X_train_tensor.shape[1]
-hidden_size = 64
 output_size = len(le.classes_)
-learning_rate = 0.01
-num_epochs = 50
+
+hidden_size = CONFIG["base_model"]["model"]["hidden_size"]
+learning_rate = CONFIG["base_model"]["training"]["learning_rate"]
+num_epochs = CONFIG["base_model"]["training"]["num_epochs"]
 
 # ---------------------------
 # Model, loss, optimizer

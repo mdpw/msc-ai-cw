@@ -8,7 +8,7 @@ import numpy as np
 import os
 import joblib
 import json
-from main_app.config import CONFIG
+from config import CONFIG
 
 # -----------------------------
 # Paths
@@ -117,7 +117,7 @@ sampler = WeightedRandomSampler(weights=sample_weights, num_samples=len(sample_w
 # -----------------------------
 # DataLoaders
 # -----------------------------
-batch_size = CONFIG["training"]["batch_size"]
+batch_size = CONFIG["best_model"]["training"]["batch_size"]
 train_loader = DataLoader(TensorDataset(X_train_tensor, y_train_tensor), batch_size=batch_size, sampler=sampler)
 val_loader = DataLoader(TensorDataset(X_val_tensor, y_val_tensor), batch_size=batch_size, shuffle=False)
 test_loader = DataLoader(TensorDataset(X_test_tensor, y_test_tensor), batch_size=batch_size, shuffle=False)

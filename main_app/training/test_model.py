@@ -3,7 +3,7 @@ import torch
 import pandas as pd
 from main_app.backend.best_model import ANN
 from main_app.training.preprocess import scaler, le, X_train_tensor
-from main_app.config import CONFIG
+from config import CONFIG
 import torch.nn as nn
 import torch.optim as optim
 
