@@ -18,7 +18,7 @@ with open(os.path.join(MODELS_DIR, 'feature_names.json'), 'r') as f:
     FEATURE_NAMES = json.load(f)
 
 MODEL_PATH = os.path.join(MODELS_DIR, 'best_model.pth')
-TRAIN_CSV = os.path.join(MODELS_DIR, 'train_for_shap_original.csv')
+TRAIN_CSV = os.path.join(MODELS_DIR, 'train_for_shap.csv')
 
 # ---------------- Load ANN ----------------
 input_size = len(FEATURE_NAMES)

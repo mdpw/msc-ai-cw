@@ -3,22 +3,45 @@
 <head>
     <title>Cinnamon Quality Analyzer</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script>
+        function showLoading() {
+            document.getElementById('loading-notification').style.display = 'block';
+        }
+        function hideLoading() {
+            document.getElementById('loading-notification').style.display = 'none';
+        }
+        function clearForm() {
+            document.getElementById('prompt').value = '';
+            document.getElementById('features').value = '';
+        }
+
+        window.onload = function() {
+            hideLoading();
+        };
+    </script>
 </head>
 <body>
+    <div id="loading-notification" style="display:none; position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#fffae6; color:#333; padding:10px 20px; border-radius:5px; box-shadow:0 2px 5px rgba(0,0,0,0.2); z-index:999;">
+        Please wait...
+    </div>
     <div class="container">
         <h1>Cinnamon Quality Analyzer - GenAI</h1>
-        <form method="post">
+        <form method="post" onsubmit="showLoading()">
             <div class="form-group">
                 <label for="prompt">Enter Grading Rules / Prompt:</label>
-                <textarea id="prompt" name="prompt" rows="6">You are an expert quality grader. Return Low, Medium, or High only.</textarea>
+                <textarea id="prompt" name="prompt" rows="6">{{ prompt_val }}</textarea>
             </div>
 
             <div class="form-group">
                 <label for="features">Enter Cinnamon Features:</label>
-                <textarea id="features" name="features" rows="6">Moisture: 7.5, Ash: 1.3, Volatile_Oil: 2.1, Acid_Insoluble_Ash: 0.16, Chromium: 0.43, Coumarin: 0.36, Fiber: 10.79, Density: 0.91, Oil_Content: 6.02, Resin: 2.35, Pesticide_Level: 0.013, PH_Value: 5.9</textarea>
+                <textarea id="features" name="features" rows="6">{{ features_val }}</textarea>
             </div>
 
-            <button type="submit" class="btn">Analyze Quality</button>
+            <div class="form-actions" style="display:flex; justify-content:space-between; gap:20px; margin-top:15px;">
+                <button type="submit" class="btn" style="flex:1;">Analyze Quality</button>
+                <button type="button" class="btn" onclick="clearForm()" style="flex:1;">Clear</button>
+            </div>
+
 
             {% if response %}
             <div id="result">

@@ -24,9 +24,9 @@ def predict_quality(
     input_size = X_train_tensor.shape[1]    
     output_size = len(le.classes_)
 
-    hidden1_size = CONFIG["model"]["hidden1_size"]
-    hidden2_size = CONFIG["model"]["hidden2_size"]
-    dropout_rate = CONFIG["model"]["dropout_rate"]
+    hidden1_size = CONFIG["best_model"]["model"]["hidden1_size"]
+    hidden2_size = CONFIG["best_model"]["model"]["hidden2_size"]
+    dropout_rate = CONFIG["best_model"]["model"]["dropout_rate"]
 
     model = ANN(
         input_size=input_size,

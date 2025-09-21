@@ -85,6 +85,24 @@ button.btn:hover {
     background-color: #45a049;
 }
 
+.btn {
+    padding: 10px;
+    border-radius: 6px;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.btn:first-child {
+    background-color: #4CAF50; /* green */
+    color: white;
+}
+
+.btn:last-child {
+    background-color: #4CAF50; /* red */
+    color: white;
+}
+
 /* Result text */
 #result {
     grid-column: span 2;

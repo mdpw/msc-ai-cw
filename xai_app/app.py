@@ -30,7 +30,7 @@ def predict_shap():
 @app.route('/global_shap', methods=['GET'])
 def global_shap():
     try:
-        sample_file = os.path.join(BASE_DIR, '..', 'main_app', 'backend', 'model', 'train_for_shap_original.csv')
+        sample_file = os.path.join(BASE_DIR, '..', 'main_app', 'backend', 'model', 'train_for_shap.csv')
         sample_data = pd.read_csv(sample_file)[FEATURE_NAMES].sample(50, random_state=42)
 
         result = predict_and_explain_shap(sample_data, global_analysis=True)

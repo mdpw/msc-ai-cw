@@ -28,7 +28,6 @@ form.addEventListener('submit', async (e) => {
         });
 
         const data = await response.json();
-        console.info('Hi....')
         console.log(data);
 
         if (data.prediction) {

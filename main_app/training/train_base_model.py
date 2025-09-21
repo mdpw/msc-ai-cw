@@ -42,7 +42,6 @@ optimizer = optim.SGD(model.parameters(), lr=learning_rate)
 
 # Directory setup for saving best model
 model_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../backend/model'))
-#model_dir = os.path.join(os.path.dirname(__file__), "backend", "model")
 os.makedirs(model_dir, exist_ok=True)
 model_path = os.path.join(model_dir, "base_model.pth")
 
