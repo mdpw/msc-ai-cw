@@ -5,12 +5,12 @@ The grading process of cinnamon products remains inconsistent, which creates pro
 <img src="https://github.com/mdpw/msc-ai-cw/blob/main/frontend/static/images/ceylon-cinnamon.jpg" style="max-width: 100%; height: auto;">
 
 Business Need
-Current manual quality testing is slow, subjective, and inconsistent. By applying ANN: <br/>
-•	Quality grading becomes automated and standardized, which helps in improving the Brand Trust.<br/> 
-•	Businesses gain data-driven insights for better pricing, quality control, and regulatory compliance.<br/>
-•	Decision-making is faster, enabling efficient processing and shipment planning.<br/>
-•	Risk Reduction & Compliance<br/>
-•	Product Development & Innovation<br/>
+Current manual quality testing is slow, subjective, and inconsistent.<br/> By applying ANN: <br/>
+  •	Quality grading becomes automated and standardized, which helps in improving the Brand Trust.<br/> 
+  •	Businesses gain data-driven insights for better pricing, quality control, and regulatory compliance.<br/>
+  •	Decision-making is faster, enabling efficient processing and shipment planning.<br/>
+  •	Risk Reduction & Compliance<br/>
+  •	Product Development & Innovation<br/>
 
 Steps to Run Commands
 
